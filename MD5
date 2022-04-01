@@ -1,0 +1,16 @@
+2557b6d2cf81cabc1a93d2233898c993 *DESCRIPTION
+71da8e4bb0aaaa857f42dde2f3d7015c *NAMESPACE
+1c270e38816d6a2546fa064e0c531cb1 *NEWS.md
+478da866b28f3bbef2b813c94f1a6156 *R/functions.R
+8c7552d4f0843a1cf731b9f5b195cc5b *README.md
+73d70b39844d2b87d59b4075cce1fa4c *build/vignette.rds
+d419d6731319dab45b15dbcfdcc71f7a *inst/doc/SPCompute-vignette.R
+1312d552b128f7661907689bbb50f5bd *inst/doc/SPCompute-vignette.Rmd
+23fa090fd8a83d728d2b1e68038f5fc4 *inst/doc/SPCompute-vignette.html
+c4a93052aa3b4f947240d397e7f09fad *man/Compute_Power.Rd
+6748a3b2fdaefde3d862280d0f136a3a *man/Compute_Size.Rd
+459041aece94b3a2e000cb66eac68ffa *man/check_parameters.Rd
+e38ede0a3beb103f677cbcc26c97eec4 *tests/testthat.R
+b2edc877ffa2ef17dca18d11dabec406 *tests/testthat/test_01_parameter_check.R
+7a4bcdb8e6cfc80855d06ec8992fe627 *tests/testthat/test_02_testPower.R.R
+1312d552b128f7661907689bbb50f5bd *vignettes/SPCompute-vignette.Rmd

@@ -1,0 +1,164 @@
+---
+title: "SPCompute"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SPCompute}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SPCompute)
+```
+
+## Section 1: Compute power/sample size for binary traits
+
+When the trait of interest is binary, we assume the following logistic regression model: $$\log\bigg(\frac{\text{P}(Y_i=1|X)}{1-\text{P}(Y_i=1|X)}\bigg) = X\beta,$$
+where the design matrix contains a column of $1's$ for the intercept, a column of genotypes $G$ and a column for non-genetic covariate $E$ (optional).
+
+The regression parameter vector $\beta$ contains $\beta_0$, $\beta_G$ and $\beta_E$, respectively represent intercept parameter, genetic effect and covariate effect.
+
+To compute power or sample size, the user will need to specify the following information:
+
+- `preva`, the prevalence rate of the disease in the population, defined as $\text{P}(Y=1)$.
+- `betaG`, the true effect size of genetic effect.
+- `pG`, the minor allele frequency of the SNP.
+
+If there exists non-genetic covariate $E$ in the model, the user will also need to specify the following parameters:
+
+- `betaE`, the true effect size of non-genetic covariate effect.
+- `gammaG`, the parameter that specifies the dependency between $E$ and $G$.
+
+If the non-genetic covariate $E$ is binary, the following marginal information on $E$ should be specified:
+
+- `pE`, the population prevalence rate of $E$, defined as $\text{P}(E=1)$.
+Otherwise if it is continuous, the required marginal information should be:
+
+- `muE`, the population mean of $E$.
+- `sigmaE`, the population SD of $E$.
+
+These parameters should be summarized into a list, with appropriate names, such as the following when covariate is binary:
+
+```{r}
+para <- list(preva = 0.2, pG = 0.1, betaG = 0.1, betaE = 0.3, pE = 0.3, gammaG = 0)
+```
+
+To compute power given a sample size `n`, the user can use the function `Compute_Size`, after specifying the argument for:
+
+- `parameters`, a list of true parameter values defined as above.
+- `n`, the given sample size
+- `covariate`, the type of covariate, should be "binary", "continuous" or "none".
+- `mode`, the genetic mode, should be "additive", "dominant" or "recessive".
+- `alpha`, the significance level.
+- `method`, the method used to do the computation. Should be "semi-sim" (faster for large sample) or "expand" (better for smaller sample).
+
+For example:
+
+```{r}
+Compute_Power(parameters = para, n = 2e4, covariate = "binary", mode = "additive", alpha = 0.05, method = "semi-sim")
+```
+
+or:
+
+```{r}
+Compute_Power(parameters = para, n = 2e4, covariate = "binary", mode = "additive", alpha = 0.05, method = "expand")
+```
+
+Similarly, to compute the required sample size to achieve a certain power, one just needs to change the argument `n` to `PowerAim`, which defines the target power, and uses the function `Compute_Size`:
+
+```{r}
+round(Compute_Size(parameters = para, PowerAim = 0.8, covariate = "binary", mode = "additive", alpha = 0.05, method = "semi-sim"))
+round(Compute_Size(parameters = para, PowerAim = 0.8, covariate = "binary", mode = "additive", alpha = 0.05, method = "expand"))
+```
+
+or if the genetic mode is dominant:
+
+```{r}
+round(Compute_Size(parameters = para, PowerAim = 0.8, covariate = "binary", mode = "dominant", alpha = 0.05, method = "semi-sim"))
+
+round(Compute_Size(parameters = para, PowerAim = 0.8, covariate = "binary", mode = "dominant", alpha = 0.05, method = "expand"))
+```
+
+If one wants to have more accurate estimate of sample size or power when using the method `semi-sim`, the parameter `B` can be set to larger value, which will take longer run-time:
+
+
+```{r}
+round(Compute_Size(parameters = para, PowerAim = 0.8, covariate = "binary", mode = "dominant", alpha = 0.05, method = "semi-sim", B = 5e5))
+```
+
+
+Unlike the case to compute power, when computing sample size, it is always recommended to use the method `semi-sim`, since the method `expand` will not work when the sample size is extremely small, and will work at a much slower speed when the sample size is extremely large.
+
+
+
+## Section 2: Compute power/sample size for continuous traits
+
+
+When the trait of interest is continuous, we assume the following linear regression model: $$Y = X\beta + \epsilon,$$ where the noise $\epsilon\sim N(0,\sigma_\epsilon^2)$.
+
+To compute power or sample size, the procedures will be always the same as in the binary case, except that the parameter `preva` will be replaced by the set of parameters:
+
+- `TraitMean`, specifying the population mean of the continuous trait, i.e. $\mathbb{E}(Y)$.
+- `TraitSD`, specifying the population standard deviation of the continuous trait.
+
+The R function `Compute_Size` or `Compute_Power` will then compute quantities such as $\sigma_\epsilon$ using these marginal information automatically.
+
+Alternatively, the user may also inputs the values of $\sigma_\epsilon$ directly instead of inputting the value of `TraitSD`, by replacing `TraitSD` with
+
+- `ResidualSD`, the value of $\sigma_\epsilon$ in the model.
+
+Now the computation can be proceeded by specifying `response = "continuous"`:
+
+```{r}
+para <- list(TraitMean = 3, TraitSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.3, pE = 0.3, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+```
+
+Or:
+
+```{r}
+para <- list(TraitMean = 3, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.3, pE = 0.3, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+```
+
+Note that for continuous trait, the value of `TraitMean` is only used to do parameter conversion, which will not affect the result of power or sample size computation. So if the purpose is not to compute the converted parameter such as $\beta_0$, the value of `TraitMean` can be set to arbitrary numeric value, as shown in the following example:
+
+```{r}
+para <- list(TraitMean = 3, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.3, pE = 0.3, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+
+para <- list(TraitMean = 30000, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.3, pE = 0.3, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+```
+
+
+Similarly, when the covariate $E$ and the SNP $G$ are independent (i.e. `gammaG = 0`), power or sample size computation will not depend on the covariate information at all:
+
+```{r}
+para <- list(TraitMean = 0, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 1000, pE = 0.5, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+
+para <- list(TraitMean = 0, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.001, pE = 0.1, gammaG = 0)
+Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
+round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
+```
+
+
+
+
+
+
+
+
