@@ -15,7 +15,7 @@
 #' @export
 check_parameters <- function(parameters, response, covariate){
   if(response == "binary"){
-    if(covariate == "continuous"){
+    if("continuous" %in% covariate){
       required_names <- c("preva", "pG", "betaG", "betaE", "muE", "sigmaE", "gammaG")
       if(any(! required_names %in% names(parameters))){
         message(paste("Error: There are missing parameters that need to be defined first:", paste(required_names[!required_names %in% names(parameters)], collapse = ",")))
@@ -25,7 +25,7 @@ check_parameters <- function(parameters, response, covariate){
         return(T)
       }
     }
-    else if(covariate == "binary"){
+    else if("binary" %in% covariate){
       required_names <- c("preva", "pG", "betaG", "betaE", "pE", "gammaG")
       if(any(! required_names %in% names(parameters))){
         message(paste("Error: There are missing parameters that need to be defined first:", paste(required_names[!required_names %in% names(parameters)], collapse = ",")))
@@ -47,7 +47,7 @@ check_parameters <- function(parameters, response, covariate){
     }
   }
   if(response == "continuous"){
-    if(covariate == "continuous"){
+    if("continuous" %in% covariate){
       required_names <- c("TraitMean", "TraitSD", "pG", "betaG", "betaE", "muE", "sigmaE", "gammaG")
       required_names2 <- c("ResidualSD", "pG", "betaG", "betaE", "muE", "sigmaE", "gammaG")
       if(any(! required_names %in% names(parameters))){
@@ -63,7 +63,7 @@ check_parameters <- function(parameters, response, covariate){
         return(T)
       }
     }
-    else if(covariate == "binary"){
+    else if("binary" %in% covariate){
       required_names <- c("TraitMean", "TraitSD", "pG", "betaG", "betaE", "pE", "gammaG")
       required_names2 <- c("ResidualSD", "pG", "betaG", "betaE", "pE", "gammaG")
       if(any(! required_names %in% names(parameters))){
@@ -3475,7 +3475,6 @@ Compute_Size_Expanded <- function(parameters, PowerAim, response, covariate, mod
 #' @noRd
 Compute_Size_Sim_simpler <- function(parameters, PowerAim, B = 10000, response = "binary", covariate = "binary", mode = "additive", alpha = 0.05, seed = 123, LargePowerApproxi = FALSE, upper.lim.n = 800000){
   if(check_parameters(parameters, response, covariate) != TRUE){return(message("Define the above missing parameters before continuing"))}
-  if(check_parameters(parameters, response, covariate) != TRUE){return(message("Define the above missing parameters before continuing"))}
   compute_power_diff <- function(n){
     ### Once know this SE of betaG hat, compute its power at this given sample size n:
     Power = Compute_Power_Sim(parameters, n, B = B, response = response, covariate = covariate, mode = mode, alpha = alpha, seed = seed, LargePowerApproxi = LargePowerApproxi)
@@ -3572,4 +3571,16 @@ Compute_Size <- function(parameters, PowerAim, response = "binary", covariate = 
     return(message("Error: The selected method is not defined."))
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
