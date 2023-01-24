@@ -252,20 +252,12 @@ convert_preva_to_intercept <- function(parameters, mode = "additive", covariate 
 }
 
 
-
-
-
-
-
-
-
-
-
 #' Compute the Power of an association study at a given sample size, accommodating more than one covariates, using the Semi-Simulation method.
 #'
 #' @param parameters A list of parameters that contains all the required parameters in the model. If response is "binary", this list needs to contain "prev" which denotes the prevalence of the disease (or case to control ratio for case-control sampling). If response is continuous, the list needs to contain "traitSD" and "traitMean" which represent the standard deviation and mean of the continuous trait.
 #' If covariate is not "none", a parameter "gammaG" needs to be defined to capture the dependence between the SNP and the covariate (through linear regression model if covariate is continuous, and logistic model if covariate is binary). If covariate is "binary", list needs to contains "pE" that defines the frequency of the covariate. If it is continuous, list needs to contain "muE" and "sigmaE" to define
 #' its mean and standard deviation. The MAF is defined as "pG", with HWE assumed to hold.
+#' Without specifying the parameter "gammaE", by default it is assumed the two covariates are conditionally independent given G. The parameter "gammaE" when specified, should be interpreted as the regression coefficient of the first covariate when regressing the second covariate on it conditional on the SNP G.
 #' @param n An integer number that indicates the sample size.
 #' @param response A string of either "binary" or "continuous", indicating the type of response/trait variable in the model, by default is "binary"
 #' @param covariate A vector of length two with elements being either c("binary", "continuous"),c("binary", "binary") or c("continuous", "continuous"),  indicating the type of covariate E in the model.
@@ -288,13 +280,29 @@ Compute_Power_multi <- function(parameters, n, response = "binary", covariate, m
   if(check_parameters(parameters, response, covariate) != TRUE){return(message("Define the above missing parameters before continuing"))}
   if(response == "binary"){
     if(all(covariate == c("binary", "binary"))){
-      Compute_Power_Sim_BBB(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_BBB(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_BBB_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
     }
     else if(all(covariate == c("binary", "continuous"))){
-      Compute_Power_Sim_BBC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_BBC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_BBC_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
     }
     else if(all(covariate == c("continuous", "continuous"))){
-      Compute_Power_Sim_BCC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_BCC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_BCC_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      }
+
     }
     else{
       return(message("covariate only supports c(\"binary\", \"binary\"), c(\"binary\", or \"continuous\"), c(\"continuous\", \"continuous\")"))
@@ -302,13 +310,28 @@ Compute_Power_multi <- function(parameters, n, response = "binary", covariate, m
   }
   else if(response == "continuous") {
     if(all(covariate == c("binary", "binary"))){
-      Compute_Power_Sim_CBB(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_CBB(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_CBB_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
     }
     else if(all(covariate == c("binary", "continuous"))){
-      Compute_Power_Sim_CBC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_CBC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_CBC_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, searchSizeGamma0 = searchSizeGamma0, LargePowerApproxi = LargePowerApproxi)
+      }
     }
     else if(all(covariate == c("continuous", "continuous"))){
-      Compute_Power_Sim_CCC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      if(is.null(parameters$gammaE)){
+        Compute_Power_Sim_CCC(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      }
+      else{
+        Compute_Power_Sim_CCC_dep(n = n, B = B, parameters = parameters, mode = mode, alpha = alpha, seed = seed, searchSizeBeta0 = searchSizeBeta0, LargePowerApproxi = LargePowerApproxi)
+      }
     }
     else{
       return(message("covariate only supports c(\"binary\", \"binary\"), c(\"binary\", or \"continuous\"), c(\"continuous\", \"continuous\")"))

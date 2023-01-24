@@ -1,3 +1,3 @@
-# SPCompute 1.0.1
+# SPCompute 1.0.3
 
-* Added a `NEWS.md` file to track changes to the package.
+* Updated the power (sample size) computation functions to accommodate conditional dependency between covariates.

@@ -156,6 +156,47 @@ round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", m
 ```
 
 
+## Section 3: Power/Sample Size Computation with Multiple Covariates
+
+When there are multiple covariates ($E_1$ and $E_2$) simultaneously affecting the trait $Y$, we assume the following (glm) model:
+$$g_1[\mathbb{E}(Y|E_1,E_2,G)] = \beta_0 + \beta_GG + \beta_{E_1}E_1 + \beta_{E_2}E_2.$$
+
+The dependency between $E_1, E_2$ and $G$ are specified through the following (nested) second stage regressions:
+\begin{equation}
+\begin{aligned}
+g_2[\mathbb{E}(E_1|G)] &= \gamma_{01} + \gamma_{G_1}G\\
+g_3[\mathbb{E}(E_2|G,E_1)] &= \gamma_{02} + \gamma_{G_2}G + \gamma_E E_1.\\
+\end{aligned}
+\end{equation}
+
+
+The covariates and the trait could be either continuous or binary, where the link functions $g_1,g_2$ and $g_3$ correspond to linear and logistic regression respectively as described in previous sections. 
+
+
+For example when $Y$ is binary, $E_1$ is binary (with $\beta_{E_1} = 0.3,\  \text{P}(E_1=1)=0.3$) and $E_2$ is continuous (with $\beta_{E_2} = 0.2,\ \mathbb{E}(E_2) = 0, \ \text{Var}(E_2) = 0.4$), the power can be computed as:
+```{r}
+para <- list(preva = 0.2, pG = 0.1, betaG = 0.1, betaE = c(0.3, 0.2), 
+             pE = 0.3, gammaG = c(0.15,0.25), gammaE = 0.1,
+             muE = 0, sigmaE = sqrt(0.4))
+Compute_Power_multi(parameters = para, n = 3000, mode = "additive",
+                    covariate = c("binary", "continuous"), response = "binary")
+```
+
+In other words, this correspond to the models:
+\begin{equation}
+\begin{aligned}
+\log\bigg(\frac{\text{P}(Y=1|E_1,E_2,G)}{1-\text{P}(Y=1|E_1,E_2,G)}\bigg) &= \beta_0 + 0.1 G + 0.3 E_1 + 0.2 E_2 \\
+\log\bigg(\frac{\text{P}(E_1=1|G)}{1-\text{P}(E_1=1|G)}\bigg) &= \gamma_{01} + 0.15 G\\
+\mathbb{E}(E_2|G,E_1) &= \gamma_{02} + 0.25 G + 0.1 E_1,\\
+\end{aligned}
+\end{equation}
+where all the remaining parameters $\bigg(\beta_0, \gamma_{01}, \gamma_{02}, \text{Var}[E_2|G,E_1] \bigg)$ are automatically solved using the marginal information on $Y$, $E_1$, $E_2$ and $G$.
+
+
+
+Note that when `gammaE` is unspecified, by the default it is assumed the two covariates are conditionally independent given $G$.
+
+
 
 
 

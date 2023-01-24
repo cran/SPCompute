@@ -56,3 +56,10 @@ para <- list(TraitMean = 0, ResidualSD = 1, pG = 0.1, betaG = 0.1, betaE = 0.001
 Compute_Power(parameters = para, n = 5e3, covariate = "binary", response = "continuous", mode = "additive", alpha = 0.05)
 round(Compute_Size(parameters = para, PowerAim = 0.8, response = "continuous", mode = "additive", alpha = 0.05))
 
+## -----------------------------------------------------------------------------
+para <- list(preva = 0.2, pG = 0.1, betaG = 0.1, betaE = c(0.3, 0.2), 
+             pE = 0.3, gammaG = c(0.15,0.25), gammaE = 0.1,
+             muE = 0, sigmaE = sqrt(0.4))
+Compute_Power_multi(parameters = para, n = 3000, mode = "additive",
+                    covariate = c("binary", "continuous"), response = "binary")
+

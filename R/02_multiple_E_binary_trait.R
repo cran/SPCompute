@@ -29,7 +29,6 @@ Compute_Power_Sim_BCC <- function(n, B = 10000, parameters, mode = "additive", a
     gamma01 <- muE1 - gammaG1 * (2*pG*qG + 2*pG^2)
     gamma02 <- muE2 - gammaG2 * (2*pG*qG + 2*pG^2)
 
-
     betaG <- parameters$betaG
     varG <- (2*pG*qG + 4*pG^2) - (2*pG*qG + 2*pG^2)^2
 
@@ -37,10 +36,8 @@ Compute_Power_Sim_BCC <- function(n, B = 10000, parameters, mode = "additive", a
     if((sigmaE1^2) <= (gammaG1^2) * varG){return(message("Error: SigmaE[1] must be larger to be compatible with other parameters"))}
     if((sigmaE2^2) <= (gammaG2^2) * varG){return(message("Error: SigmaE[2] must be larger to be compatible with other parameters"))}
 
-
     sigmaError1 <- sqrt(sigmaE1^2 - (gammaG1^2) * varG)
     sigmaError2 <- sqrt(sigmaE2^2 - (gammaG2^2) * varG)
-
 
     solveForbeta0_add_con <- function(preva, betaG, betaE1, betaE2, pG, gammaG1, gammaG2){
       qG <- 1 - pG
@@ -62,7 +59,6 @@ Compute_Power_Sim_BCC <- function(n, B = 10000, parameters, mode = "additive", a
       G <- sample(c(0,1,2), size = 1, replace = TRUE, prob = c(qG^2,2*pG*qG, pG^2))
       E1 <- gamma01 + gammaG1*G + stats::rnorm(1,sd = sigmaError1)
       E2 <- gamma02 + gammaG2*G + stats::rnorm(1,sd = sigmaError2)
-
       X <- matrix(c(1,G,E1,E2), ncol = 1)
       eta <- beta0 + betaG*G + betaE1*E1 + betaE2*E2
       weight <- stats::dlogis(eta)
